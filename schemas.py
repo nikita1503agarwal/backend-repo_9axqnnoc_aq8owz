@@ -11,7 +11,7 @@ Model name is converted to lowercase for the collection name:
 - BlogPost -> "blogs" collection
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
 
 # Example schemas (replace with your own):
@@ -38,11 +38,30 @@ class Product(BaseModel):
     category: str = Field(..., description="Product category")
     in_stock: bool = Field(True, description="Whether product is in stock")
 
-# Add your own schemas here:
-# --------------------------------------------------
+# Mobile Legends specific schemas
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class MlbbPackage(BaseModel):
+    """
+    MLBB diamond package offering
+    Collection name: "mlbbpackage"
+    """
+    name: str = Field(..., description="Display name, e.g., 86 Diamonds")
+    diamonds: int = Field(..., ge=1, description="Number of diamonds included")
+    bonus: Optional[int] = Field(0, ge=0, description="Bonus diamonds, if any")
+    price: float = Field(..., ge=0, description="Price in USD")
+    popular: bool = Field(False, description="Highlight this package in UI")
+
+class Order(BaseModel):
+    """
+    Order placed by a customer for MLBB top-up
+    Collection name: "order"
+    """
+    game: str = Field("mlbb", description="Game identifier")
+    player_id: str = Field(..., description="MLBB Player ID")
+    server_id: str = Field(..., description="MLBB Server ID")
+    package_id: str = Field(..., description="Reference to MlbbPackage _id as string")
+    package_name: str = Field(..., description="Package display name at time of purchase")
+    diamonds: int = Field(..., ge=1, description="Diamonds purchased")
+    price: float = Field(..., ge=0, description="Order amount in USD")
+    contact_email: Optional[EmailStr] = Field(None, description="Contact email for receipt/updates")
+    status: str = Field("pending", description="Order status: pending, paid, completed, failed")
